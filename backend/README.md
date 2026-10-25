@@ -14,6 +14,12 @@ API REST y panel de administración de **Wallmark**, construidos con Laravel 13 
 ## Instalación
 
 ```bash
+composer run setup
+```
+
+Equivale a:
+
+```bash
 composer install
 copy .env.example .env                        # macOS/Linux: cp .env.example .env
 php artisan key:generate
@@ -23,7 +29,7 @@ npm install
 npm run build
 ```
 
-> `database/*.sqlite*` está ignorado en git: en un clon nuevo hay que crear el archivo antes de migrar. `composer run setup` ejecuta todos los pasos anteriores asumiendo que la base de datos ya existe.
+> `database/*.sqlite*` está ignorado en git: en un clon nuevo hay que crear el archivo antes de migrar. Por eso `composer run setup` lo hace automáticamente.
 
 ## Comandos
 

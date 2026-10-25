@@ -58,15 +58,22 @@ wallmark/
 
 ```bash
 cd backend
+composer run setup        # instala, configura, migra y siembra los datos de ejemplo
+composer run dev          # → http://127.0.0.1:8000
+```
+
+`composer run setup` equivale a estos pasos manuales, si prefieres controlarlos uno a uno:
+
+```bash
 composer install
 copy .env.example .env                         # macOS/Linux: cp .env.example .env
 php artisan key:generate
 type nul > database\database.sqlite           # macOS/Linux: touch database/database.sqlite
 php artisan migrate --seed
-composer run dev                               # → http://127.0.0.1:8000
+npm install && npm run build                  # assets del panel admin
 ```
 
-> `database/*.sqlite*` está ignorado en git, así que **hay que crear el archivo antes de migrar** en un clon nuevo. `composer run setup` automatiza todo lo anterior (excepto crear la base de datos).
+> `database/*.sqlite*` está ignorado en git, así que en un clon nuevo hay que **crear el archivo antes de migrar**. Por eso ese paso vive dentro de `composer run setup`.
 
 ### 2 · Frontend (muro público)
 
