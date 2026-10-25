@@ -1,58 +1,161 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Wallmark · Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API REST y panel de administración de **Wallmark**, construidos con Laravel 13 (PHP 8.4).
 
-## About Laravel
+- **`/api/v1`** — API JSON que consume el frontend público (`../frontend/`).
+- **`/admin`** — panel de administración renderizado en servidor con Blade, Tailwind CSS y Vite.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Requisitos
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- PHP >= 8.3 (probado con **8.4**) con las extensiones `curl`, `dom`, `fileinfo`, `mbstring`, `pdo_sqlite`, `xml`
+- Composer 2
+- Node.js >= 20.9 y npm (para compilar los assets del admin)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Instalación
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
+copy .env.example .env                        # macOS/Linux: cp .env.example .env
+php artisan key:generate
+type nul > database\database.sqlite          # macOS/Linux: touch database/database.sqlite
+php artisan migrate --seed
+npm install
+npm run build
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+> `database/*.sqlite*` está ignorado en git: en un clon nuevo hay que crear el archivo antes de migrar. `composer run setup` ejecuta todos los pasos anteriores asumiendo que la base de datos ya existe.
 
-## Contributing
+## Comandos
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Comando | Qué hace |
+|---|---|
+| `composer run dev` | Servidor, cola, logs y Vite a la vez (`php artisan dev`) |
+| `composer run test` | Limpia la configuración y ejecuta PHPUnit |
+| `composer run setup` | Instalación completa desde cero |
+| `vendor/bin/pint` | Formatea el código PHP |
 
-## Code of Conduct
+## Base de datos
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+SQLite por defecto (`database/database.sqlite`), configurable con `DB_CONNECTION` en `.env`.
 
-## Security Vulnerabilities
+Los seeders son idempotentes (`updateOrCreate`):
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- `AdminUserSeeder` — crea/actualiza la cuenta de administración desde `ADMIN_EMAIL` y `ADMIN_PASSWORD`.
+- `LinkSeeder` — 6 enlaces de ejemplo con metadata estática (**sin llamadas a la red**).
 
-## License
+## Panel de administración
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Todas las rutas viven bajo `/admin`; `/` redirige ahí. Las rutas de acceso usan middleware `guest` y el resto `auth`.
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/admin/login` | Formulario de acceso |
+| POST | `/admin/login` | Autentica |
+| POST | `/admin/logout` | Cierra sesión |
+| GET | `/admin` | Dashboard |
+| GET | `/admin/links` | Lista de enlaces |
+| GET | `/admin/links/{id}/edit` | Editar enlace |
+| PATCH | `/admin/links/{id}` | Guarda cambios |
+| DELETE | `/admin/links/{id}` | Elimina enlace |
+| DELETE | `/admin/tags/{tag}` | Elimina etiqueta |
+
+Las invitados que entran a una ruta protegida son redirigidos a `admin.login` (configurado en `bootstrap/app.php`).
+
+**Credenciales por defecto** (configurables en `.env`):
+
+| Variable | Valor por defecto |
+|---|---|
+| `ADMIN_EMAIL` | `admin@wall.test` |
+| `ADMIN_PASSWORD` | `password` |
+
+## API
+
+Prefijo: **`/api/v1`**. Las respuestas devuelven `{ "data": ... }` mediante Eloquent API Resources, y el listado añade paginación en `meta`. Los errores de validación se devuelven como JSON en `errors` (configurado en `bootstrap/app.php`).
+
+> **Sin autenticación por ahora**: las rutas de la API no requieren token. Laravel Sanctum está instalado y listo para cuando se agregue.
+
+### `GET /api/v1/links`
+
+| Parámetro | Tipo | Defecto | Descripción |
+|---|---|---|---|
+| `q` | string | — | Busca en `title`, `url`, `description` y `site_name` |
+| `tag` | string | — | Filtra por nombre de etiqueta |
+| `per_page` | int | `24` | Entre 1 y 100 |
+| `page` | int | `1` | Página |
+
+Orden: los más recientes primero, con `tags` precargados.
+
+### `POST /api/v1/links`
+
+```json
+{ "url": "https://ejemplo.com/articulo", "tags": ["css", "frontend"] }
+```
+
+**Validación**
+
+| Regla | Detalle |
+|---|---|
+| `url` | requerida, `http`/`https`, máx. 2048 caracteres, **única** → `422` con *"Esta URL ya está guardada en el muro."* |
+| `tags` | opcional, array, máx. 10 elementos, cada uno máx. 40 caracteres |
+
+**Comportamiento**
+
+1. Descarga la página remota (timeout de conexión 5 s, total 10 s, 1 MB máximo) con `App\Services\MetadataExtractor`.
+2. Lee Open Graph, Twitter Cards, `<title>`, favicon y `site_name`, resolviendo URLs relativas contra la URL original.
+3. Si la descarga falla o la respuesta no es HTML, genera un **fallback** a partir de la URL, así que el guardado nunca falla por metadatos.
+4. Crea las etiquetas faltantes y las normaliza a minúsculas.
+5. Limitado a **30 peticiones/minuto** (`throttle`).
+
+Devuelve `201` con el enlace y sus etiquetas.
+
+### `PATCH /api/v1/links/{id}`
+
+| Campo | Reglas |
+|---|---|
+| `title` | requerido, string, 2–200 caracteres |
+| `description` | opcional, `null` para vaciar, máx. 1000 caracteres |
+| `tags` | opcional, array; **reemplaza** el listado completo |
+
+Acepta `tags` como string separado por comas (útil desde formularios HTML); lo normaliza en `UpdateLinkRequest`.
+
+### `DELETE /api/v1/links/{id}` → `204`
+
+### `GET /api/v1/tags?q=`
+
+Etiquetas con su contador `links_count`, ordenadas por uso y luego alfabéticamente, máximo 20. `q` filtra por nombre (typeahead).
+
+## Estructura
+
+```
+app/
+├── Http/
+│   ├── Controllers/
+│   │   ├── Api/          LinkController, TagController (API JSON)
+│   │   └── Admin/        AuthController, DashboardController, LinkController, TagController
+│   ├── Requests/         StoreLinkRequest, UpdateLinkRequest (validación)
+│   └── Resources/        LinkResource, TagResource (Eloquent API Resources)
+├── Models/               Link, Tag, User
+└── Services/
+    └── MetadataExtractor.php    Extracción de metadatos OG/Twitter con fallback
+database/
+├── factories/            Link, Tag, User
+├── migrations/
+└── seeders/              AdminUserSeeder, LinkSeeder
+routes/
+├── api.php               /api/v1/*
+└── web.php               /admin/*
+tests/Feature/            AdminAuthTest, LinkApiTest
+```
+
+## Tests
+
+```bash
+composer run test
+# o un archivo/uno en específico
+php artisan test --compact --filter=LinkApiTest
+```
+
+| Archivo | Cubre |
+|---|---|
+| `LinkApiTest` | Extracción de metadata, fallback cuando la descarga falla, rechazo de URLs duplicadas o inválidas, búsqueda, filtro por etiqueta, typeahead, actualización y borrado |
+| `AdminAuthTest` | Redirección de invitados, login, credenciales inválidas, logout, listado y borrado de enlaces desde el admin |
