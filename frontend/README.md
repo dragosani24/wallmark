@@ -4,6 +4,8 @@ Muro público de **Wallmark**: Next.js 16 (App Router) + React 19 + TypeScript +
 
 Muestra los enlaces guardados en un layout masonry, con búsqueda con *debounce*, chips de etiqueta y un formulario que guarda URLs nuevas contra la API del backend.
 
+![Muro de enlaces de Wallmark con formulario de guardado, buscador, filtros por etiqueta y tarjetas en layout masonry](docs/wall.png)
+
 ## Requisitos
 
 - Node.js **>= 20.9** (requisito de Next.js 16)
