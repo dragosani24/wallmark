@@ -1,0 +1,16 @@
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+/.idea
+/.vscode
+
+# Variables de entorno (nunca subir credenciales)
+.env
+.env.*
+!.env.example
+
+# Evidencia de investigación (~20 MB) — borra esta línea si quieres incluirla
+/pinterest-evidence/
