@@ -4,6 +4,8 @@
 
 Pegas una URL, Wallmark extrae automáticamente su título, descripción, imagen y favicon, y la coloca en un muro con estilo masonry. Organiza todo con etiquetas, busca por texto y filtra por etiqueta.
 
+![Muro de enlaces de Wallmark con formulario de guardado, buscador, filtros por etiqueta y tarjetas en layout masonry](frontend/docs/wall.png)
+
 ## Stack
 
 | Aplicación | Tecnología |
