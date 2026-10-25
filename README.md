@@ -37,13 +37,10 @@ El admin es una aplicación Blade servida por Laravel. El muro público es una a
 
 ```
 wallmark/
-├── backend/               Laravel: API REST + panel admin
-├── frontend/              Next.js: muro público
-├── pinterest-evidence/    investigación de patrones (no versionada)
+├── backend/     Laravel: API REST + panel admin
+├── frontend/    Next.js: muro público
 └── .gitignore
 ```
-
-`pinterest-evidence/` (20 MB de evidencias) está excluido del versionado. Para incluirlo, borra su línea del `.gitignore` de la raíz.
 
 ## Requisitos
 
